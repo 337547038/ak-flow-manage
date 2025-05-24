@@ -10,18 +10,18 @@ import java.io.Serial;
  * (Flow)实体类
  *
  * @author ak.design 337547038
- * @since 2025-05-22 18:47:48
+ * @since 2025-05-23 17:10:34
  */
 @Data
 public class Flow implements Serializable {
     @Serial
-    private static final long serialVersionUID = -19076217224073917L;
+    private static final long serialVersionUID = 713701018120417422L;
 
     private Integer id;
 /**
      * 申请人
      */
-    private Integer name;
+    private Integer userId;
 /**
      * 申请时间
      */

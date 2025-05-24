@@ -4,7 +4,7 @@
 
         <resultMap type="com.flow.ak.entity.Flow" id="FlowMap">
                 <result property="id" column="id" jdbcType="INTEGER"/>
-                <result property="name" column="name" jdbcType="INTEGER"/>
+                <result property="userId" column="userId" jdbcType="INTEGER"/>
                 <result property="startTime" column="startTime" jdbcType="TIMESTAMP"/>
                 <result property="endTime" column="endTime" jdbcType="TIMESTAMP"/>
                 <result property="formContent" column="formContent" jdbcType="VARCHAR"/>
@@ -15,7 +15,7 @@
         </resultMap>
 
     <sql id="commColumnsItem">
-id, name, startTime, endTime, formContent, status, currentNode, flowId, approver        
+id, userId, startTime, endTime, formContent, status, currentNode, flowId, approver        
     </sql>
         <!--查询单个-->
         <select id="queryById" resultMap="FlowMap">
@@ -41,8 +41,8 @@ id, name, startTime, endTime, formContent, status, currentNode, flowId, approver
                     <if test="query.id != null">
                         and id = #{query.id}
                     </if>
-                    <if test="query.name != null">
-                        and name = #{query.name}
+                    <if test="query.userId != null">
+                        and userId = #{query.userId}
                     </if>
                     <if test="query.startTime != null">
                         and startTime = #{query.startTime}
@@ -87,8 +87,8 @@ id, name, startTime, endTime, formContent, status, currentNode, flowId, approver
                     <if test="id != null">
                         and id = #{id}
                     </if>
-                    <if test="name != null">
-                        and name = #{name}
+                    <if test="userId != null">
+                        and userId = #{userId}
                     </if>
                     <if test="startTime != null">
                         and startTime = #{startTime}
@@ -116,17 +116,17 @@ id, name, startTime, endTime, formContent, status, currentNode, flowId, approver
 
         <!--新增所有列-->
         <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-            insert into sys_flow(name, startTime, endTime, formContent, status, currentNode, flowId, approver)
+            insert into sys_flow(userId, startTime, endTime, formContent, status, currentNode, flowId, approver)
                 values
-            (#{name}, #{startTime}, #{endTime}, #{formContent}, #{status}, #{currentNode}, #{flowId}, #{approver})
+            (#{userId}, #{startTime}, #{endTime}, #{formContent}, #{status}, #{currentNode}, #{flowId}, #{approver})
         </insert>
 
         <!--通过主键修改数据-->
         <update id="updateById">
             update sys_flow
             <set>
-                    <if test="name != null">
-                        name = #{name},
+                    <if test="userId != null">
+                        userId = #{userId},
                     </if>
                     <if test="startTime != null">
                         startTime = #{startTime},
