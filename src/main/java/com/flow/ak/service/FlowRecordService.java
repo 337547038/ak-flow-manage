@@ -7,7 +7,7 @@ import java.util.Map;
  * (FlowRecord)表服务接口
  *
  * @author ak.design 337547038
- * @since 2025-05-22 18:47:25
+ * @since 2025-05-24 15:44:57
  */
 public interface FlowRecordService {
 

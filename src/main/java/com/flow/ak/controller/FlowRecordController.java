@@ -13,7 +13,7 @@ import java.util.Map;
  * (FlowRecord)表控制层
  *
  * @author ak.design 337547038
- * @since 2025-05-22 18:47:24
+ * @since 2025-05-24 15:44:55
  */
 
 @RestController
@@ -40,6 +40,7 @@ public class FlowRecordController {
      * }
      * @return 查询结果
      */
+
     @PostMapping("list")
     public ResponseEntity<Map<String, Object>> queryByPage(@RequestBody Map<String, Object> pages) {
         return ResponseEntity.ok(this.flowRecordService.queryByPage(pages));
@@ -51,6 +52,7 @@ public class FlowRecordController {
      *@param query 主键
      * @return 单条数据
      */
+
     @PostMapping("get")
     public ResponseEntity<FlowRecord> queryById(@RequestBody Map<String, Integer> query) {
         return ResponseEntity.ok(this.flowRecordService.queryById(query.get("id")));
@@ -62,6 +64,7 @@ public class FlowRecordController {
      * @param flowRecord 实体
      * @return 新增结果Id
      */
+
     @PostMapping("save")
     public ResponseEntity<Integer> add(@RequestBody FlowRecord flowRecord) {
         FlowRecord result = flowRecordService.insert(flowRecord);
@@ -74,6 +77,7 @@ public class FlowRecordController {
      * @param flowRecord 实体
      * @return 影响行数
      */
+
     @PostMapping("edit")
     public ResponseEntity<Integer> edit(@RequestBody FlowRecord flowRecord) {
         return ResponseEntity.ok(this.flowRecordService.updateById(flowRecord));
@@ -85,6 +89,7 @@ public class FlowRecordController {
      * @param ids 主键
      * @return 删除是否成功
      */
+
     @PostMapping("delete")
     public ResponseEntity<Boolean> deleteById(@RequestBody Map<String,Object> ids) {
         String string = ids.get("id").toString();

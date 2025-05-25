@@ -35,13 +35,17 @@ public class Flow implements Serializable {
      */
     private String formContent;
 /**
-     * 状态
+     * 0进行中 1完成 2拒绝 3已撤回 4退回
      */
     private Integer status;
 /**
      * 当前节点id
      */
     private String currentNode;
+/**
+     * 当前审批人
+     */
+    private String currentUserId;
 /**
      * 所属流程id
      */

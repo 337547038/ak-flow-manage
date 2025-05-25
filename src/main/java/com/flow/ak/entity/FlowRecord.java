@@ -10,12 +10,12 @@ import java.io.Serial;
  * (FlowRecord)实体类
  *
  * @author ak.design 337547038
- * @since 2025-05-22 18:47:25
+ * @since 2025-05-24 15:44:56
  */
 @Data
 public class FlowRecord implements Serializable {
     @Serial
-    private static final long serialVersionUID = 272228870873621425L;
+    private static final long serialVersionUID = 251607962847669831L;
 
     private Integer id;
 /**
@@ -23,9 +23,9 @@ public class FlowRecord implements Serializable {
      */
     private Integer flowId;
 /**
-     * 节点处理人
+     * 节点处理人id 0表示系统
      */
-    private String name;
+    private Integer userId;
 /**
      * 处理时间
      */
@@ -35,9 +35,17 @@ public class FlowRecord implements Serializable {
      */
     private String remark;
 /**
-     * 1同意 2拒绝 3返回发起人 4委托
+     * 1同意 2拒绝 3返回发起人 4委托 5系统自动
      */
     private Integer status;
+/**
+     * 当前节点id
+     */
+    private String nodeId;
+/**
+     * 当前节点名称
+     */
+    private String nodeName;
 
 
 }

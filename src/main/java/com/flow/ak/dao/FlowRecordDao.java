@@ -11,7 +11,7 @@ import java.util.Map;
  * (FlowRecord)表数据库访问层
  *
  * @author ak.design 337547038
- * @since 2025-05-22 18:47:24
+ * @since 2025-05-24 15:44:56
  */
  @Mapper
 public interface FlowRecordDao {
@@ -62,7 +62,7 @@ public interface FlowRecordDao {
      * @param id 主键
      * @return 影响行数
      */
-    int deleteById(@Param("id") String[] id);
+    int deleteById(String[] id);
 
 }
 

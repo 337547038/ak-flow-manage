@@ -33,4 +33,12 @@ public class Utils {
         map.put("query", query);
         return map;
     }
+
+    /**
+     * 返回当前登录用户id
+     * @return 返回当前登录用户id
+     */
+    public static Integer getCurrentUserId(){
+        return 4;
+    }
 }
