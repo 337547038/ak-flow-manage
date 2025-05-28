@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,6 +44,11 @@ public class UserController {
     @PostMapping("list")
     public ResponseEntity<Map<String, Object>> queryByPage(@RequestBody Map<String, Object> pages) {
         return ResponseEntity.ok(this.userService.queryByPage(pages));
+    }
+
+    @PostMapping("listByIds")
+    public ResponseEntity<List<Map<String,Object>>> queryByIds(@RequestBody String ids) {
+        return ResponseEntity.ok(this.userService.queryByIds(ids));
     }
 
     /**
@@ -87,7 +93,7 @@ public class UserController {
      * @param ids 主键
      * @return 删除是否成功
      */
-    
+
     @PostMapping("delete")
     public ResponseEntity<Boolean> deleteById(@RequestBody Map<String,Object> ids) {
         String string = ids.get("id").toString();

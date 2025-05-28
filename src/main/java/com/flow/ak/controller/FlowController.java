@@ -1,13 +1,20 @@
 package com.flow.ak.controller;
 
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson2.TypeReference;
+import com.alibaba.fastjson2.util.TypeUtils;
 import com.flow.ak.entity.Flow;
 import com.flow.ak.service.FlowService;
+import com.flow.ak.utils.Utils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,7 +38,6 @@ public class FlowController {
      * 前端传参:
      * * @param pages 筛选条件分页对象
      * {
-     * query:{},//查询条件
      * extend:{
      * pageNum:1,//当前第几页
      * pageSize:20,//每页多少条记录，默认20。小于0返回全部
@@ -42,10 +48,46 @@ public class FlowController {
      *
      * @return 查询结果
      */
-    @PostMapping("list")
+    /*@PostMapping("list")
     public ResponseEntity<Map<String, Object>> queryByPage(@RequestBody Map<String, Object> pages) {
         return ResponseEntity.ok(this.flowService.queryByPage(pages));
+    }*/
+    // 我发起的分页查询
+    @PostMapping("my")
+    public ResponseEntity<Map<String, Object>> queryByPage(@RequestBody Map<String, Object> query) {
+        query.put("userId", Utils.getCurrentUserId());
+        return ResponseEntity.ok(this.flowService.queryByPage(query));
     }
+
+    /**
+     * 撤回流程申请
+     *
+     * @param query 流程id
+     * @return 结果
+     */
+    @PostMapping("cancel")
+    public ResponseEntity<Boolean> queryCancel(@RequestBody Map<String, Integer> query) {
+        System.out.println("cancel controller");
+        return ResponseEntity.ok(this.flowService.queryCancel(query.get("id")));
+    }
+
+    /**
+     * 我的待办
+     *
+     * @param query 分页相关参数
+     * @return 结果
+     */
+    @PostMapping("todo")
+    public ResponseEntity<Map<String, Object>> getTodo(@RequestBody Map<String, Object> query) {
+        query.put("currentUserId", Utils.getCurrentUserId());
+        return ResponseEntity.ok(this.flowService.queryByPage(query));
+    }
+
+    @PostMapping("approval")
+    public ResponseEntity<Boolean> submitApproval(@RequestBody Map<String, Object> query) {
+        return ResponseEntity.ok(this.flowService.approval(query));
+    }
+
 
     /**
      * 通过主键查询单条数据
@@ -55,7 +97,7 @@ public class FlowController {
      */
 
     @PostMapping("get")
-    public ResponseEntity<Flow> queryById(@RequestBody Map<String, Integer> query) {
+    public ResponseEntity<Map<String, Object>> queryById(@RequestBody Map<String, Integer> query) {
         return ResponseEntity.ok(this.flowService.queryById(query.get("id")));
     }
 

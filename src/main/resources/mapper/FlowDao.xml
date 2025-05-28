@@ -29,46 +29,39 @@ id, userId, startTime, endTime, formContent, status, currentNode, currentUserId,
         <!--查询指定行数据-->
         <select id="queryAllByLimit">
             select
-            <choose>
-                <when test="extend.columns != null and extend.columns!=''">
-                    ${extend.columns}
-                </when>
-                <otherwise>
-                    <include refid="commColumnsItem" />
-                </otherwise>
-            </choose>
-            from sys_flow
+            f.id,f.userId,f.startTime,f.endTime,f.status,f.currentNode,f.currentUserId,f.flowId,d.name,d.classify
+            from sys_flow f LEFT JOIN sys_flow_design d On f.flowId=d.id
             <where>
-                    <if test="query.id != null">
-                        and id = #{query.id}
-                    </if>
-                    <if test="query.userId != null">
-                        and userId = #{query.userId}
-                    </if>
-                    <if test="query.startTime != null">
-                        and startTime = #{query.startTime}
-                    </if>
-                    <if test="query.endTime != null">
-                        and endTime = #{query.endTime}
-                    </if>
-                    <if test="query.formContent != null and query.formContent != ''">
-                        and formContent = #{query.formContent}
-                    </if>
-                    <if test="query.status != null">
-                        and status = #{query.status}
-                    </if>
-                    <if test="query.currentNode != null and query.currentNode != ''">
-                        and currentNode = #{query.currentNode}
-                    </if>
-                    <if test="query.currentUserId != null and query.currentUserId != ''">
-                        and currentUserId = #{query.currentUserId}
-                    </if>
-                    <if test="query.flowId != null">
-                        and flowId = #{query.flowId}
-                    </if>
-                    <if test="query.approver != null and query.approver != ''">
-                        and approver = #{query.approver}
-                    </if>
+                <if test="query.id != null">
+                    and id = #{query.id}
+                </if>
+                <if test="query.userId != null">
+                    and userId = #{query.userId}
+                </if>
+                <if test="query.startTime != null">
+                    and startTime = #{query.startTime}
+                </if>
+                <if test="query.endTime != null">
+                    and endTime = #{query.endTime}
+                </if>
+                <if test="query.formContent != null and query.formContent != ''">
+                    and formContent = #{query.formContent}
+                </if>
+                <if test="query.status != null">
+                    and status = #{query.status}
+                </if>
+                <if test="query.currentNode != null and query.currentNode != ''">
+                    and currentNode = #{query.currentNode}
+                </if>
+                <if test="query.currentUserId != null and query.currentUserId != ''">
+                    and FIND_IN_SET(#{query.currentUserId}, currentUserId) > 0
+                </if>
+                <if test="query.flowId != null">
+                    and flowId = #{query.flowId}
+                </if>
+                <if test="query.approver != null and query.approver != ''">
+                    and approver = #{query.approver}
+                </if>
             </where>
             <choose>
                 <when test="extend.sort != null and extend.sort!=''">
@@ -79,7 +72,7 @@ id, userId, startTime, endTime, formContent, status, currentNode, currentUserId,
                 </otherwise>
             </choose>
             <if test="extend.pageSize >0">
-            limit #{extend.pageIndex}, #{extend.pageSize}
+                limit #{extend.pageIndex}, #{extend.pageSize}
             </if>
         </select>
 
@@ -147,10 +140,10 @@ id, userId, startTime, endTime, formContent, status, currentNode, currentUserId,
                     <if test="status != null">
                         status = #{status},
                     </if>
-                    <if test="currentNode != null and currentNode != ''">
+                    <if test="currentNode != null">
                         currentNode = #{currentNode},
                     </if>
-                    <if test="currentUserId != null and currentUserId != ''">
+                    <if test="currentUserId != null">
                         currentUserId = #{currentUserId},
                     </if>
                     <if test="flowId != null">

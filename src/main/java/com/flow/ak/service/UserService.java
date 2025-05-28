@@ -2,6 +2,7 @@ package com.flow.ak.service;
 
 import com.flow.ak.entity.User;
 
+import java.util.List;
 import java.util.Map;
 /**
  * 用户表(User)表服务接口
@@ -25,6 +26,8 @@ public interface UserService {
      * @return 查询结果
      */
     Map<String,Object> queryByPage(Map<String,Object> pages);
+
+    List<Map<String,Object>> queryByIds(String ids);
     /**
      * 新增数据
      *

@@ -32,6 +32,7 @@ public interface UserDao {
      */
     List<Map<String,Object>> queryAllByLimit(@Param("query") User user,@Param("extend") Object extend);
 
+    List<Map<String,Object>> queryByIds(@Param("ids") String ids);
     /**
      * 统计总行数
      *

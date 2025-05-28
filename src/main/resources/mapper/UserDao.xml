@@ -101,5 +101,11 @@ id, userName, leaderId
             #{item}
         </foreach>
         </delete>
+    <select id="queryByIds">
+        select
+        <include refid="commColumnsItem" />
+        from sys_user
+        where id in (${ids})
+    </select>
 
     </mapper>

@@ -2,6 +2,7 @@ package com.flow.ak.service;
 
 import com.flow.ak.entity.Flow;
 
+import java.util.List;
 import java.util.Map;
 /**
  * (Flow)表服务接口
@@ -17,8 +18,10 @@ public interface FlowService {
      * @param id 主键
      * @return 实例对象
      */
-    Flow queryById(Integer id);
-    
+    Map<String, Object> queryById(Integer id);
+
+    Map<String, List<String>> getNodeStatus(Flow flow);
+
     /**
      * 分页查询
      * @param pages 筛选条件 分页对象
@@ -49,4 +52,7 @@ public interface FlowService {
      */
     boolean deleteById(String[] id);
 
+
+    boolean queryCancel(Integer id);
+    boolean approval(Map<String,Object> query);
 }

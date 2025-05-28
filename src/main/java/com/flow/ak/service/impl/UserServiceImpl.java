@@ -54,6 +54,10 @@ public class UserServiceImpl implements UserService {
         return response;
     }
 
+    @Override
+    public List<Map<String,Object>> queryByIds(String ids){
+        return this.userDao.queryByIds(ids);
+    }
     /**
      * 新增数据
      *

@@ -27,15 +27,16 @@ id, flowId, userId, dateTime, remark, status, nodeId, nodeName
         <!--查询指定行数据-->
         <select id="queryAllByLimit">
             select
-            <choose>
+            <!--<choose>
                 <when test="extend.columns != null and extend.columns!=''">
                     ${extend.columns}
                 </when>
                 <otherwise>
                     <include refid="commColumnsItem" />
                 </otherwise>
-            </choose>
-            from sys_flow_record
+            </choose>-->
+               *, u.userName
+            from sys_flow_record r LEFT JOIN sys_user u ON r.userId=u.id
             <where>
                     <if test="query.id != null">
                         and id = #{query.id}
@@ -67,7 +68,7 @@ id, flowId, userId, dateTime, remark, status, nodeId, nodeName
                     order by ${extend.sort}
                 </when>
                 <otherwise>
-                    order by id desc
+                    order by r.id desc
                 </otherwise>
             </choose>
             <if test="extend.pageSize >0">
