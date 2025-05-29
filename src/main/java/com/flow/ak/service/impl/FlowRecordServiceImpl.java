@@ -1,6 +1,7 @@
 package com.flow.ak.service.impl;
 
 import com.alibaba.fastjson2.JSON;
+import com.flow.ak.service.UserService;
 import com.flow.ak.utils.Utils;
 import com.flow.ak.entity.FlowRecord;
 import com.flow.ak.dao.FlowRecordDao;
@@ -8,9 +9,11 @@ import com.flow.ak.service.FlowRecordService;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * (FlowRecord)表服务实现类
  *
@@ -21,6 +24,9 @@ import java.util.Map;
 public class FlowRecordServiceImpl implements FlowRecordService {
     @Resource
     private FlowRecordDao flowRecordDao;
+
+    @Resource
+    private UserService userService;
 
     /**
      * 通过ID查询单条数据
@@ -36,19 +42,55 @@ public class FlowRecordServiceImpl implements FlowRecordService {
     /**
      * 分页查询
      *
-     * @param pages  筛选条件分页对象
+     * @param pages 筛选条件分页对象
      * @return 查询结果
      */
     @Override
-    public Map<String, Object> queryByPage(Map<String,Object> pages) {
-       Map<String,Object> map = Utils.pagination(pages);//处理分页信息
-        FlowRecord flowRecord = JSON.parseObject(JSON.toJSONString(map.get("query")), FlowRecord.class);//json字符串转java对象
-        
+    public Map<String, Object> queryByPage(Map<String, Object> pages) {
+        Map<String, Object> map = Utils.getPagination(pages.get("extend"));//处理分页信息
+        FlowRecord flowRecord = JSON.parseObject(JSON.toJSONString(pages), FlowRecord.class);//json字符串转java对象
+
         long total = this.flowRecordDao.count(flowRecord);
-        List<Map<String,Object>> list = this.flowRecordDao.queryAllByLimit(flowRecord,map.get("extend"));
+        List<Map<String, Object>> list = this.flowRecordDao.queryAllByLimit(flowRecord, map);
         Map<String, Object> response = new HashMap<>();
         response.put("list", list);
         response.put("total", total);
+        return response;
+    }
+
+    /**
+     * 我的已办
+     *
+     * @param query 参数
+     * @return 结果
+     */
+    public Map<String, Object> getDonePage(Map<String, Object> query) {
+        Map<String, Object> map = Utils.getPagination(query.get("extend"));//处理分页信息
+        FlowRecord flowRecord = JSON.parseObject(JSON.toJSONString(query), FlowRecord.class);
+        long total = this.flowRecordDao.count(flowRecord);
+        List<Map<String, Object>> list = this.flowRecordDao.queryDoneList(flowRecord, map);
+        Map<String, Object> response = new HashMap<>();
+        response.put("list", list);
+        response.put("total", total);
+        // 返回用户字典
+        List<String> userIdList = new ArrayList<>();
+        for (Map<String, Object> map1 : list) {
+            userIdList.add(map1.get("userId").toString());
+        }
+        if (!userIdList.isEmpty()) {
+            // 使用流去除重复项并连接成字符串
+            String ids = userIdList.stream()
+                    .flatMap(s -> Stream.of(s.split(",")))
+                    .distinct()
+                    .collect(Collectors.joining(","));
+            List<Map<String, Object>> userlist = userService.queryByIds(ids);
+            Map<String, Object> userMap = new HashMap<>();
+            for (Map<String, Object> map1 : userlist) {
+                userMap.put(map1.get("id").toString(), map1.get("userName").toString());
+            }
+            response.put("userDict", userMap);
+        }
+
         return response;
     }
 

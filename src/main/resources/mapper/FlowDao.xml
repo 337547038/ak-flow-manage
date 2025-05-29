@@ -32,36 +32,36 @@ id, userId, startTime, endTime, formContent, status, currentNode, currentUserId,
             f.id,f.userId,f.startTime,f.endTime,f.status,f.currentNode,f.currentUserId,f.flowId,d.name,d.classify
             from sys_flow f LEFT JOIN sys_flow_design d On f.flowId=d.id
             <where>
-                <if test="query.id != null">
+                <!--<if test="query.id != null">
                     and id = #{query.id}
-                </if>
+                </if>-->
                 <if test="query.userId != null">
-                    and userId = #{query.userId}
+                    and f.userId = #{query.userId}
                 </if>
                 <if test="query.startTime != null">
-                    and startTime = #{query.startTime}
+                    and f.startTime = #{query.startTime}
                 </if>
                 <if test="query.endTime != null">
-                    and endTime = #{query.endTime}
+                    and f.endTime = #{query.endTime}
                 </if>
-                <if test="query.formContent != null and query.formContent != ''">
+                <!--<if test="query.formContent != null and query.formContent != ''">
                     and formContent = #{query.formContent}
-                </if>
+                </if>-->
                 <if test="query.status != null">
-                    and status = #{query.status}
+                    and f.status = #{query.status}
                 </if>
-                <if test="query.currentNode != null and query.currentNode != ''">
+                <!--<if test="query.currentNode != null and query.currentNode != ''">
                     and currentNode = #{query.currentNode}
-                </if>
+                </if>-->
                 <if test="query.currentUserId != null and query.currentUserId != ''">
                     and FIND_IN_SET(#{query.currentUserId}, currentUserId) > 0
                 </if>
                 <if test="query.flowId != null">
-                    and flowId = #{query.flowId}
+                    and f.flowId = #{query.flowId}
                 </if>
-                <if test="query.approver != null and query.approver != ''">
+                <!--<if test="query.approver != null and query.approver != ''">
                     and approver = #{query.approver}
-                </if>
+                </if>-->
             </where>
             <choose>
                 <when test="extend.sort != null and extend.sort!=''">

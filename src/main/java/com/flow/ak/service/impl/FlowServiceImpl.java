@@ -66,7 +66,7 @@ public class FlowServiceImpl implements FlowService {
     }
 
 
-    public Map<String, List<String>> getNodeStatus(Flow flow) {
+    private Map<String, List<String>> getNodeStatus(Flow flow) {
         Map<String, List<String>> nodeStatusMap = new LinkedHashMap<>();
         List<String> activeNode = new ArrayList<>();
         FlowDesign flowDesign = flowDesignService.queryById(flow.getFlowId());
@@ -120,10 +120,12 @@ public class FlowServiceImpl implements FlowService {
         }
         //2 找出当前进行中的节点及节点前线条
         JSONObject currentNode = JSON.parseObject(flow.getCurrentNode());
-        for (Map.Entry<String, Object> entry : currentNode.entrySet()) {
-            activeNode.add(entry.getKey());
-            // 节点前的
-            findNodePreEdges(entry.getKey(), flowChart.getEdges(), activeNode, includesNode);
+        if (currentNode != null) {
+            for (Map.Entry<String, Object> entry : currentNode.entrySet()) {
+                activeNode.add(entry.getKey());
+                // 节点前的
+                findNodePreEdges(entry.getKey(), flowChart.getEdges(), activeNode, includesNode);
+            }
         }
         // 3找出已通过和拒绝的节点
         List<String> historyNode = new ArrayList<>(); // 已通过的节点
@@ -189,7 +191,8 @@ public class FlowServiceImpl implements FlowService {
         List<String> userIdList = new ArrayList<>();
         for (Map<String, Object> map1 : list) {
             Object currentUserId = map1.get("currentUserId");
-            if (currentUserId != null && currentUserId != "") {
+            if (!Objects.equals(currentUserId, "")) {
+                System.out.println("currentUserId3:" + currentUserId);
                 userIdList.add(currentUserId.toString());
             }
         }
@@ -201,8 +204,6 @@ public class FlowServiceImpl implements FlowService {
                     .collect(Collectors.joining(","));
             List<Map<String, Object>> userlist = userService.queryByIds(ids);
             Map<String, Object> userMap = new HashMap<>();
-            System.out.println("list");
-            System.out.println(userlist);
             for (Map<String, Object> map1 : userlist) {
                 userMap.put(map1.get("id").toString(), map1.get("userName").toString());
             }
@@ -213,6 +214,7 @@ public class FlowServiceImpl implements FlowService {
 
     /**
      * 撤回流程
+     *
      * @param id 流程id
      * @return 撤回结果
      */
@@ -232,9 +234,62 @@ public class FlowServiceImpl implements FlowService {
         return i > 0;
     }
 
+    /**
+     * 审批节点
+     *
+     * @param query 参数
+     * @return 审批结果
+     */
     @Override
-    public boolean approval(){
-        return true;
+    public boolean approval(Map<String, Object> query) {
+        Flow flow = this.flowDao.queryById((Integer) query.get("id"));
+        JSONObject currentNode = JSONObject.parseObject(flow.getCurrentNode());
+        Integer userId = Utils.getCurrentUserId();
+        Integer status = switch ((Integer) query.get("status")) {
+            case 1 -> // 同意
+                    0; // 保持进行中状态，继续下一节点
+            case 2 -> // 拒绝
+                    2;
+            case 3 -> // 退回
+                    4;
+            default -> 0;
+        };
+        String currentNodeId = null;
+        for (Map.Entry<String, Object> entry : currentNode.entrySet()) {
+            String nodeId = entry.getKey();
+            JSONObject value = (JSONObject) entry.getValue();
+            if (Objects.equals(value.getString("userId"), userId.toString())) {
+                // 添加审批记录
+                currentNodeId = nodeId;
+                addFlowRecord(userId, flow.getId(), nodeId, value.getString("nodeName"), (Integer) query.get("status"), (String) query.get("remark"));
+            } else {
+                // 如果存在其他并列的节点，系统自动通过
+                addFlowRecord(Utils.getCurrentUserId(), flow.getId(), nodeId, value.getString("nodeName"), 6, "系统自动处理");
+            }
+        }
+        if (Objects.equals(query.get("status").toString(), "1")) {
+            // 同意时要继续找下一节点
+            Map<String, String> activeNode = getCurrentNode(flow, currentNodeId);
+            if (!activeNode.isEmpty()) {
+                flow.setStatus(0);
+                flow.setCurrentNode(activeNode.get("activeNodes"));
+                flow.setCurrentUserId(activeNode.get("activeUserId"));
+            } else {
+                // 没有找到需要审批的节点，标注为完成
+                flow.setStatus(1);
+                flow.setEndTime(new Date());
+                flow.setCurrentUserId("");
+                flow.setCurrentNode("");
+            }
+        } else {
+            // 拒绝或退回时直接完成当前流程
+            flow.setStatus(status);
+            flow.setEndTime(new Date());
+            flow.setCurrentNode("");
+            flow.setCurrentUserId("");
+        }
+        int i = this.flowDao.updateById(flow);
+        return i > 0;
     }
 
     /**
@@ -275,7 +330,7 @@ public class FlowServiceImpl implements FlowService {
         this.flowDao.insert(flow);
         // 获取当前需处理的节点
         formContent = flow.getFormContent();
-        Map<String, String> activeNode = getCurrentNode(flow);
+        Map<String, String> activeNode = getCurrentNode(flow, "insert");
         if (!activeNode.isEmpty()) {
             flow.setCurrentNode(activeNode.get("activeNodes"));
             flow.setCurrentUserId(activeNode.get("activeUserId"));
@@ -313,15 +368,31 @@ public class FlowServiceImpl implements FlowService {
         return this.flowDao.deleteById(id) > 0;
     }
 
-    private Map<String, String> getCurrentNode(Flow flow) {
+    /**
+     * 根据条件获取当前需处理的节点及节点处理人
+     *
+     * @param flow   当前流利信息
+     * @param nodeId 开始节点id
+     * @return 找到的节点信息
+     */
+    private Map<String, String> getCurrentNode(Flow flow, String nodeId) {
         FlowDesign flowDesign = flowDesignService.queryById(flow.getFlowId());
         String json = flowDesign.getContent();
         FlowChart flowChart = JSON.parseObject(json, FlowChart.class);
-        // 找到开始节点
-        Node startNode = flowChart.getNodes().stream()
-                .filter(node -> "start".equals(node.getType()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("No start node found"));
+        Node startNode = new Node();
+        if (Objects.equals(nodeId, "insert")) {
+            // 从开始节点找
+            startNode = flowChart.getNodes().stream()
+                    .filter(node -> "start".equals(node.getType()))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("No start node found"));
+        } else {
+            // 从指定节点开始查找
+            startNode = flowChart.getNodes().stream()
+                    .filter(node -> nodeId.equals(node.getId()))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("No start node found"));
+        }
         // 从开始节点开始遍历
         // 当前节点信息
         Map<String, Map<String, Object>> activeNodes = new HashMap<>();
@@ -381,13 +452,18 @@ public class FlowServiceImpl implements FlowService {
                     System.out.println("条件节点");
                     // 这里可以添加条件判断逻辑
                     // 获取符合条件的下一节点
-                    String nextTaskNodeId = getNextTaskNode(nextNode.getId(), edges);
-                    Node nextTaskNode = nodes.stream()
-                            .filter(node -> node.getId().equals(nextTaskNodeId))
-                            .findFirst()
-                            .orElseThrow(() -> new RuntimeException("Target node not found"));
-                    System.out.println("nextTaskNode:" + nextTaskNode);
-                    executeTask(nextTaskNode, activeNodes, activeUserId, flowId, edges, nodes);
+                    List<String> nextTaskNodeIds = getNextTaskNode(nextNode.getId(), edges);
+                    // 这里处理下同时有存在两个或以上的条件分支成立的情况
+                    for (String nextTaskNodeId : nextTaskNodeIds) {
+                        if (!Objects.equals(nextTaskNodeId, "")) {
+                            Node nextTaskNode = nodes.stream()
+                                    .filter(node -> node.getId().equals(nextTaskNodeId))
+                                    .findFirst()
+                                    .orElseThrow(() -> new RuntimeException("Target node not found"));
+                            System.out.println("nextTaskNode:" + nextTaskNode);
+                            executeTask(nextTaskNode, activeNodes, activeUserId, flowId, edges, nodes);
+                        }
+                    }
                     break;
                 case "subProcess":
                     System.out.println("子流程");
@@ -446,20 +522,22 @@ public class FlowServiceImpl implements FlowService {
     /**
      * 条件判断时返回符合条件的下一个节点
      */
-    private String getNextTaskNode(String nodeId, List<Edge> edges) {
-        String targetNodeId = "";
+    private List<String> getNextTaskNode(String nodeId, List<Edge> edges) {
+        //String targetNodeId = "";
+        List<String> targetNodeIds = new ArrayList<>();
         for (Edge edge : edges) {
             if (edge.getSourceNodeId().equals(nodeId)) {
                 Object expr = edge.getProperties().get("expr");
                 if (expr != null) {
                     if (evaluateExpression((String) expr, "")) {
-                        targetNodeId = edge.getTargetNodeId();
-                        break;
+                        //targetNodeId = edge.getTargetNodeId();
+                        //break;
+                        targetNodeIds.add(edge.getTargetNodeId());
                     }
                 }
             }
         }
-        return targetNodeId;
+        return targetNodeIds;
     }
 
     private static boolean evaluateExpression(String expression, String flowFormContent) {

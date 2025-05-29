@@ -20,7 +20,7 @@ public interface FlowService {
      */
     Map<String, Object> queryById(Integer id);
 
-    Map<String, List<String>> getNodeStatus(Flow flow);
+    //Map<String, List<String>> getNodeStatus(Flow flow);
 
     /**
      * 分页查询
@@ -28,6 +28,9 @@ public interface FlowService {
      * @return 查询结果
      */
     Map<String,Object> queryByPage(Map<String,Object> pages);
+
+
+
     /**
      * 新增数据
      *
@@ -55,4 +58,5 @@ public interface FlowService {
 
     boolean queryCancel(Integer id);
     boolean approval(Map<String,Object> query);
+
 }

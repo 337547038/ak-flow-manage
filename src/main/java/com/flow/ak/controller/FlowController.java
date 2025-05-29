@@ -80,6 +80,7 @@ public class FlowController {
     @PostMapping("todo")
     public ResponseEntity<Map<String, Object>> getTodo(@RequestBody Map<String, Object> query) {
         query.put("currentUserId", Utils.getCurrentUserId());
+        query.put("status", 0); // 进行中
         return ResponseEntity.ok(this.flowService.queryByPage(query));
     }
 

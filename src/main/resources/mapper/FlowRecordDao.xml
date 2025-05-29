@@ -76,6 +76,38 @@ id, flowId, userId, dateTime, remark, status, nodeId, nodeName
             </if>
         </select>
 
+    <select id="queryDoneList">
+        SELECT
+        r.id,
+        r.flowId,
+        r.dateTime,
+        r.nodeName,
+        d.name AS d_name,
+        d.classify AS d_classify,
+        f.userId
+        FROM
+        sys_flow_record r
+        JOIN
+        sys_flow f ON r.flowId = f.id
+        JOIN
+        sys_flow_design d ON f.flowId = d.id
+        <where>
+            <if test="query.userId != null">
+                and r.userId = #{query.userId}
+            </if>
+            <if test="query.status != null">
+                and r.status = #{query.status}
+            </if>
+            <if test="extend.status != null">
+                and r.status in (#{extend.status})
+            </if>
+        </where>
+        order by r.id desc
+        <if test="extend.pageSize >0">
+            limit #{extend.pageIndex}, #{extend.pageSize}
+        </if>
+    </select>
+
         <!--统计总行数-->
         <select id="count" resultType="java.lang.Long">
             select count(1)

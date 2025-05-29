@@ -43,11 +43,11 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public Map<String, Object> queryByPage(Map<String,Object> pages) {
-       Map<String,Object> map = Utils.pagination(pages);//处理分页信息
-        User user = JSON.parseObject(JSON.toJSONString(map.get("query")), User.class);//json字符串转java对象
+       Map<String,Object> map = Utils.getPagination(pages.get("extend"));//处理分页信息
+        User user = JSON.parseObject(JSON.toJSONString(pages), User.class);//json字符串转java对象
         
         long total = this.userDao.count(user);
-        List<Map<String,Object>> list = this.userDao.queryAllByLimit(user,map.get("extend"));
+        List<Map<String,Object>> list = this.userDao.queryAllByLimit(user,map);
         Map<String, Object> response = new HashMap<>();
         response.put("list", list);
         response.put("total", total);

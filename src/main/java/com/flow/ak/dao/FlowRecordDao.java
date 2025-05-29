@@ -31,6 +31,7 @@ public interface FlowRecordDao {
      * @return 对象列表
      */
     List<Map<String,Object>> queryAllByLimit(@Param("query") FlowRecord flowRecord,@Param("extend") Object extend);
+    List<Map<String,Object>> queryDoneList(@Param("query") FlowRecord flowRecord,@Param("extend") Object extend);
 
     /**
      * 统计总行数

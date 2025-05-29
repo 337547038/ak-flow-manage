@@ -41,11 +41,11 @@ public class FlowDesignServiceImpl implements FlowDesignService {
      */
     @Override
     public Map<String, Object> queryByPage(Map<String,Object> pages) {
-       Map<String,Object> map = Utils.pagination(pages);//处理分页信息
-        FlowDesign flowDesign = JSON.parseObject(JSON.toJSONString(map.get("query")), FlowDesign.class);//json字符串转java对象
+       Map<String,Object> map = Utils.getPagination(pages.get("extend"));//处理分页信息
+        FlowDesign flowDesign = JSON.parseObject(JSON.toJSONString(pages), FlowDesign.class);//json字符串转java对象
         
         long total = this.flowDesignDao.count(flowDesign);
-        List<Map<String,Object>> list = this.flowDesignDao.queryAllByLimit(flowDesign,map.get("extend"));
+        List<Map<String,Object>> list = this.flowDesignDao.queryAllByLimit(flowDesign,map);
         Map<String, Object> response = new HashMap<>();
         response.put("list", list);
         response.put("total", total);

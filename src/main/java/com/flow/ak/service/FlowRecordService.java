@@ -25,6 +25,7 @@ public interface FlowRecordService {
      * @return 查询结果
      */
     Map<String,Object> queryByPage(Map<String,Object> pages);
+    Map<String,Object> getDonePage(Map<String,Object> pages);
     /**
      * 新增数据
      *
