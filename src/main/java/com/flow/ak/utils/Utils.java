@@ -56,6 +56,6 @@ public class Utils {
      * @return 返回当前登录用户id
      */
     public static Integer getCurrentUserId() {
-        return 4;
+        return 3;
     }
 }

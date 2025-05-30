@@ -84,6 +84,7 @@ public class FlowController {
         return ResponseEntity.ok(this.flowService.queryByPage(query));
     }
 
+    // 审批
     @PostMapping("approval")
     public ResponseEntity<Boolean> submitApproval(@RequestBody Map<String, Object> query) {
         return ResponseEntity.ok(this.flowService.approval(query));

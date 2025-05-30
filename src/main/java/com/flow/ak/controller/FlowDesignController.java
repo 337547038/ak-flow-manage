@@ -29,14 +29,15 @@ public class FlowDesignController {
      * 前端传参:
      * * @param pages 筛选条件分页对象
      * {
-     *     query:{},//查询条件
-     *     extend:{
-     *         pageNum:1,//当前第几页
-     *         pageSize:20,//每页多少条记录，默认20。小于0返回全部
-     *         sort:"id desc"//排序
-     *         columns:""//返回指定查询字段，如'id,name'
-     *     }
+     * query:{},//查询条件
+     * extend:{
+     * pageNum:1,//当前第几页
+     * pageSize:20,//每页多少条记录，默认20。小于0返回全部
+     * sort:"id desc"//排序
+     * columns:""//返回指定查询字段，如'id,name'
      * }
+     * }
+     *
      * @return 查询结果
      */
     @PostMapping("list")
@@ -47,7 +48,7 @@ public class FlowDesignController {
     /**
      * 通过主键查询单条数据
      *
-     *@param query 主键
+     * @param query 主键
      * @return 单条数据
      */
     @PostMapping("get")
@@ -85,7 +86,7 @@ public class FlowDesignController {
      * @return 删除是否成功
      */
     @PostMapping("delete")
-    public ResponseEntity<Boolean> deleteById(@RequestBody Map<String,Object> ids) {
+    public ResponseEntity<Boolean> deleteById(@RequestBody Map<String, Object> ids) {
         String string = ids.get("id").toString();
         String[] idList = string.split(",");
         return ResponseEntity.ok(this.flowDesignService.deleteById(idList));

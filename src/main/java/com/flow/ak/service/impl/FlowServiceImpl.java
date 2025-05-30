@@ -148,7 +148,7 @@ public class FlowServiceImpl implements FlowService {
         }
 
 
-        nodeStatusMap.put("includes", includesNode); // 拒绝的节点
+        nodeStatusMap.put("includes", includesNode); // 审批路线的节点
         nodeStatusMap.put("active", activeNode);
         nodeStatusMap.put("history", historyNode);
         nodeStatusMap.put("danger", dangerNode); // 拒绝的节点
@@ -192,9 +192,9 @@ public class FlowServiceImpl implements FlowService {
         for (Map<String, Object> map1 : list) {
             Object currentUserId = map1.get("currentUserId");
             if (!Objects.equals(currentUserId, "")) {
-                System.out.println("currentUserId3:" + currentUserId);
                 userIdList.add(currentUserId.toString());
             }
+            userIdList.add(map1.get("userId").toString());
         }
         if (!userIdList.isEmpty()) {
             // 使用流去除重复项并连接成字符串
@@ -243,6 +243,7 @@ public class FlowServiceImpl implements FlowService {
     @Override
     public boolean approval(Map<String, Object> query) {
         Flow flow = this.flowDao.queryById((Integer) query.get("id"));
+        formContent = flow.getFormContent();
         JSONObject currentNode = JSONObject.parseObject(flow.getCurrentNode());
         Integer userId = Utils.getCurrentUserId();
         Integer status = switch ((Integer) query.get("status")) {
@@ -267,9 +268,13 @@ public class FlowServiceImpl implements FlowService {
                 addFlowRecord(Utils.getCurrentUserId(), flow.getId(), nodeId, value.getString("nodeName"), 6, "系统自动处理");
             }
         }
+        System.out.println("status:" + status);
         if (Objects.equals(query.get("status").toString(), "1")) {
             // 同意时要继续找下一节点
             Map<String, String> activeNode = getCurrentNode(flow, currentNodeId);
+            /*System.out.println("找出下一节点");
+            System.out.println(currentNodeId);
+            System.out.println(activeNode);*/
             if (!activeNode.isEmpty()) {
                 flow.setStatus(0);
                 flow.setCurrentNode(activeNode.get("activeNodes"));
@@ -330,7 +335,7 @@ public class FlowServiceImpl implements FlowService {
         this.flowDao.insert(flow);
         // 获取当前需处理的节点
         formContent = flow.getFormContent();
-        Map<String, String> activeNode = getCurrentNode(flow, "insert");
+        Map<String, String> activeNode = getCurrentNode(flow, "start");
         if (!activeNode.isEmpty()) {
             flow.setCurrentNode(activeNode.get("activeNodes"));
             flow.setCurrentUserId(activeNode.get("activeUserId"));
@@ -379,7 +384,7 @@ public class FlowServiceImpl implements FlowService {
         FlowDesign flowDesign = flowDesignService.queryById(flow.getFlowId());
         String json = flowDesign.getContent();
         FlowChart flowChart = JSON.parseObject(json, FlowChart.class);
-        Node startNode = new Node();
+        /*Node startNode = new Node();
         if (Objects.equals(nodeId, "insert")) {
             // 从开始节点找
             startNode = flowChart.getNodes().stream()
@@ -392,13 +397,23 @@ public class FlowServiceImpl implements FlowService {
                     .filter(node -> nodeId.equals(node.getId()))
                     .findFirst()
                     .orElseThrow(() -> new RuntimeException("No start node found"));
+        }*/
+        String currentNodeId = nodeId;
+        if (Objects.equals(nodeId, "start")) {
+            // 从开始节点开始
+            // 从开始节点找
+            Node startNode = flowChart.getNodes().stream()
+                    .filter(node -> "start".equals(node.getType()))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("No start node found"));
+            currentNodeId = startNode.getId();
         }
         // 从开始节点开始遍历
         // 当前节点信息
         Map<String, Map<String, Object>> activeNodes = new HashMap<>();
         // 当前节点处理人
         List<String> activeUserId = new ArrayList<>();
-        traverseFlow(startNode, flowChart.getEdges(), flowChart.getNodes(), flow.getId(), activeNodes, activeUserId);
+        traverseFlow(currentNodeId, flowChart.getEdges(), flowChart.getNodes(), flow.getId(), activeNodes, activeUserId);
         Map<String, String> result = new HashMap<>();
         if (!activeUserId.isEmpty()) {
             result.put("activeUserId", String.join(",", activeUserId));
@@ -412,17 +427,17 @@ public class FlowServiceImpl implements FlowService {
     /**
      * 遍历节点
      *
-     * @param currentNode  开始节点
-     * @param edges        所有连接
-     * @param nodes        所有节点
-     * @param flowId       当前新增流程id
-     * @param activeNodes  当前节点信息
-     * @param activeUserId 当前节点审批人
+     * @param currentNodeId 开始节点
+     * @param edges         所有连接
+     * @param nodes         所有节点
+     * @param flowId        当前新增流程id
+     * @param activeNodes   当前节点信息
+     * @param activeUserId  当前节点审批人
      */
-    private void traverseFlow(Node currentNode, List<Edge> edges, List<Node> nodes, Integer flowId, Map<String, Map<String, Object>> activeNodes, List<String> activeUserId) {
+    private void traverseFlow(String currentNodeId, List<Edge> edges, List<Node> nodes, Integer flowId, Map<String, Map<String, Object>> activeNodes, List<String> activeUserId) {
         // 找出当前节点的所有出边
         List<Edge> outgoingEdges = edges.stream()
-                .filter(edge -> edge.getSourceNodeId().equals(currentNode.getId()))
+                .filter(edge -> edge.getSourceNodeId().equals(currentNodeId))
                 .toList();
 
         if (outgoingEdges.isEmpty()) {
@@ -500,7 +515,7 @@ public class FlowServiceImpl implements FlowService {
                 System.out.println("当前节点没有审批人");
                 // 节点没有审批人时，写一条节点记录继续遍历下一个
                 addFlowRecord(0, flowId, nextNode.getId(), nextNode.getText().get("value"), 6, "没有审批人自动通过");
-                traverseFlow(nextNode, edges, nodes, flowId, activeNodes, activeUserId); // 继续遍历
+                traverseFlow(nextNode.getId(), edges, nodes, flowId, activeNodes, activeUserId); // 继续遍历
             }
         } else if (Objects.equals(nextNode.getType(), "sysTask")) {
             // 找出当前节点的参与人
@@ -515,7 +530,7 @@ public class FlowServiceImpl implements FlowService {
                 // 抄送节点没有设置抄送人时
                 addFlowRecord(0, flowId, nextNode.getId(), nextNode.getText().get("value"), 6, "节点没有抄送人");
             }
-            traverseFlow(nextNode, edges, nodes, flowId, activeNodes, activeUserId); // 继续遍历
+            traverseFlow(nextNode.getId(), edges, nodes, flowId, activeNodes, activeUserId); // 继续遍历
         }
     }
 
@@ -547,6 +562,8 @@ public class FlowServiceImpl implements FlowService {
         }
         Map<String, Object> map = JSONObject.parseObject(content, new TypeReference<Map<String, Object>>() {
         });
+        System.out.println("计算expression：" + expression);
+        System.out.println("计算map：" + map);
         if (Objects.equals(expression, "") || expression == null) {
             return false;
         }
@@ -558,8 +575,6 @@ public class FlowServiceImpl implements FlowService {
             // 计算表达式的结果
             Boolean result = (Boolean) jexl.createExpression(expression).evaluate(context);
             System.out.println("计算结果：" + result);
-            System.out.println("计算expression：" + expression);
-            System.out.println("计算map：" + map);
             return result;
         } catch (Exception e) {
             System.out.println("表达式计算出错");
