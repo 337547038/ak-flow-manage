@@ -224,7 +224,7 @@ public class FlowServiceImpl implements FlowService {
         // 解析 JSON 字符串为 JSONObject
         Map<String, String> nodeMap = getNodeIdNodeName(flow.getCurrentNode(), flow.getCurrentUserId());
         // 添加操作记录
-        addFlowRecord(Utils.getCurrentUserId(), flow.getFlowId(), nodeMap.get("nodeId"), nodeMap.get("nodeName"), 4, "用户自行撤回");
+        addFlowRecord(Utils.getCurrentUserId(), flow.getId(), nodeMap.get("nodeId"), nodeMap.get("nodeName"), 4, "用户自行撤回");
         // 更新流程状态及信息
         flow.setStatus(3);
         flow.setEndTime(new Date());
@@ -256,20 +256,25 @@ public class FlowServiceImpl implements FlowService {
             default -> 0;
         };
         String currentNodeId = null;
+        System.out.println("currentNode:" + currentNode);
         for (Map.Entry<String, Object> entry : currentNode.entrySet()) {
             String nodeId = entry.getKey();
             JSONObject value = (JSONObject) entry.getValue();
-            if (Objects.equals(value.getString("userId"), userId.toString())) {
+            // 这里可能存在用豆号隔开的多个用户id
+            //if (Objects.equals(value.getString("userId"), userId.toString())) {
+            if (getIsIncludes(value.getString("userId"), userId.toString())) {
                 // 添加审批记录
                 currentNodeId = nodeId;
                 addFlowRecord(userId, flow.getId(), nodeId, value.getString("nodeName"), (Integer) query.get("status"), (String) query.get("remark"));
             } else {
                 // 如果存在其他并列的节点，系统自动通过
-                addFlowRecord(Utils.getCurrentUserId(), flow.getId(), nodeId, value.getString("nodeName"), 6, "系统自动处理");
+                addFlowRecord(0, flow.getId(), nodeId, value.getString("nodeName"), 6, "并列审批系统自动处理");
             }
         }
         System.out.println("status:" + status);
-        if (Objects.equals(query.get("status").toString(), "1")) {
+        if (Objects.equals(query.get("status").
+
+                toString(), "1")) {
             // 同意时要继续找下一节点
             Map<String, String> activeNode = getCurrentNode(flow, currentNodeId);
             /*System.out.println("找出下一节点");
@@ -293,8 +298,21 @@ public class FlowServiceImpl implements FlowService {
             flow.setCurrentNode("");
             flow.setCurrentUserId("");
         }
-        int i = this.flowDao.updateById(flow);
-        return i > 0;
+        return this.flowDao.updateById(flow) > 0;
+    }
+
+    /**
+     * 判断字符串str2是否包含在str1中
+     *
+     * @param str1 可能是使用了豆号隔开的字符串
+     * @param str2 字符串
+     * @return 是否
+     */
+    private static Boolean getIsIncludes(String str1, String str2) {
+        if (str1 == null || str1.isEmpty() || str2 == null || str2.isEmpty()) {
+            return false;
+        }
+        return Arrays.asList(str1.split(",")).contains(str2);
     }
 
     /**
@@ -302,7 +320,7 @@ public class FlowServiceImpl implements FlowService {
      *
      * @param currentNode 当前节点信息
      * @param userId      用户id
-     * @return 当前节点id和name
+     * @return 当前节点id和name8
      */
     private Map<String, String> getNodeIdNodeName(String currentNode, String userId) {
         JSONObject jsonObject = JSON.parseObject(currentNode);
@@ -312,7 +330,8 @@ public class FlowServiceImpl implements FlowService {
             String key = entry.getKey();
             JSONObject value = (JSONObject) entry.getValue();
             // 多个时取一个
-            if (userId.equals(value.getString("userId"))) {
+            // if (userId.equals(value.getString("userId"))) {
+            if (getIsIncludes(value.getString("userId"), userId)) {
                 nodeMap.put("nodeId", key);
                 nodeMap.put("nodeName", value.getString("nodeName"));
                 break;

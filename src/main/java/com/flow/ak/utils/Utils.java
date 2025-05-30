@@ -2,6 +2,9 @@ package com.flow.ak.utils;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -56,6 +59,12 @@ public class Utils {
      * @return 返回当前登录用户id
      */
     public static Integer getCurrentUserId() {
-        return 3;
+        try {
+            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+            String userId = request.getHeader("Authorization");
+            return Integer.parseInt(userId);
+        } catch (Exception e) {
+            return 0;
+        }
     }
 }

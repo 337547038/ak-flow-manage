@@ -3,6 +3,7 @@ package com.flow.ak.config;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.flow.ak.utils.Utils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -15,10 +16,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -54,7 +52,14 @@ public class ResponseAspect {
         JSONObject body = new JSONObject();
         body.put("code", 200);
         body.put("data", content);
-        String filePath = System.getProperty("user.dir") + path.replace("/api", "/mock") + id + ".json";
+        // 需带userid的
+        String includesApi = "flow/my,flow/todo,flowRecord/done,flowRecord/copy";
+        String userId = "";
+        if (Arrays.asList(includesApi.split(",")).contains(path.replace("/api/", ""))) {
+            userId = String.valueOf(Utils.getCurrentUserId());
+        }
+
+        String filePath = System.getProperty("user.dir") + path.replace("/api", "/mock") + userId + id + ".json";
         File file = new File(filePath);
         // 检查路径的每个部分，并在需要时创建它
         if (!file.getParentFile().exists()) {
