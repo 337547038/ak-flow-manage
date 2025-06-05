@@ -638,16 +638,14 @@ public class FlowServiceImpl implements FlowService {
         if (properties.get("userType") == null) {
             return null;
         }
-        return switch ((String) properties.get("userType")) {
-            case "1" -> // 指定成员
-                    properties.get("joinUserId").toString();
+
+        return switch ((String) properties.get("joinUserId")) {
+            case "1" -> properties.get("joinUserId").toString();
             case "3" -> {
                 User user = userService.queryById(Utils.getCurrentUserId());
                 yield user.getLeaderId().toString();
             }
-            case "2", "4", "5" -> "";
-            default -> // todo
-                    "";
+            default -> "";
         };
     }
 
