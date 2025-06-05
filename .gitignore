@@ -1,4 +1,4 @@
-HELP.md
+README.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -23,6 +23,7 @@ target/
 /nbproject/private/
 /nbbuild/
 /dist/
+/mock/
 /nbdist/
 /.nb-gradle/
 build/
