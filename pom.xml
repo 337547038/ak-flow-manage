@@ -79,6 +79,7 @@
         </dependencies>
     </dependencyManagement>
 
+
     <build>
         <plugins>
             <plugin>
@@ -94,7 +95,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring-boot.version}</version>
+                <version>3.5.0</version>
                 <configuration>
                     <mainClass>com.flow.ak.AkFlowApplication</mainClass>
                     <skip>true</skip>
@@ -110,5 +111,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

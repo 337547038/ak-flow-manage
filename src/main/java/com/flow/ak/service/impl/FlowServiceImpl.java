@@ -248,7 +248,7 @@ public class FlowServiceImpl implements FlowService {
         Integer userId = Utils.getCurrentUserId();
         Integer status = switch ((Integer) query.get("status")) {
             case 1 -> // 同意
-                    0; // 保持进行中状态，继续下一节点
+                    0; // 保持进行中状态，继续下一节点.
             case 2 -> // 拒绝
                     2;
             case 3 -> // 退回

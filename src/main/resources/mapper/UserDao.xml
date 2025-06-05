@@ -47,7 +47,7 @@ id, userName, leaderId
                     order by ${extend.sort}
                 </when>
                 <otherwise>
-                    order by id desc
+                    order by id asc
                 </otherwise>
             </choose>
             <if test="extend.pageSize >0">
