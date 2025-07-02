@@ -33,10 +33,12 @@ public class ResponseAspect {
             HttpServletRequest request = attributes.getRequest();
             url = request.getRequestURI();
         }
-
         JSONArray array = JSONArray.of(joinPoint.getArgs());
-        JSONObject obj = array.getJSONObject(0);
-        String id = obj.getString("id");
+        String id = null;
+        if (!array.isEmpty()) {
+            JSONObject obj = array.getJSONObject(0);
+            id = obj.getString("id");
+        }
 
         Object body = joinPoint.proceed();
         JSONObject content = JSON.parseObject(JSON.toJSONString(body));
