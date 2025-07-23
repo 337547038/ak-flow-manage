@@ -38,6 +38,6 @@ spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 java -jar ak-flow.jar
 ```
 
-即可正常在本地调试，源码部分目前有偿提供。友情价：48元，如有需要可加微信`337547038`
+即可正常在本地调试，源码部分目前有偿提供。友情价：78元，如有需要可加微信`337547038`
 
 **注意：此仓库代码缺少service层等，无法正常运行**
