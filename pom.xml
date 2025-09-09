@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.flow.ak</groupId>
     <artifactId>akFlow</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.1.0-AKFLOW</version>
     <name>akFlow</name>
     <description>akFlow</description>
     <properties>
