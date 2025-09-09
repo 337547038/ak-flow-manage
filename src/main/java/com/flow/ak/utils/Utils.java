@@ -49,7 +49,7 @@ public class Utils {
         int pageIndex = (pageNum - 1) * pageSize;
         obj.put("pageIndex", pageIndex);
         obj.put("pageSize", pageSize);
-        System.out.println(obj);
+       // System.out.println(obj);
         return obj;
     }
 

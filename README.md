@@ -21,6 +21,9 @@ https://github.com/337547038/ak-flow
 ## 演示地址
 https://337547038.github.io/ak-flow/#/
 
+## swagger文档
+http://localhost:8081/api/swagger-ui/index.html
+
 ## 调试
 
 1.安装javaSDK，运行demo下的`ak-flow.jar`
